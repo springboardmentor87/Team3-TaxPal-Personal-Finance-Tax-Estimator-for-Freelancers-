@@ -1,0 +1,9 @@
+<div class="dashboard">
+  <header>
+    <h1>Welcome, {{ auth.currentUser()?.name }} 👋</h1>
+    <button (click)="logout()">Log out</button>
+  </header>
+
+  <app-transaction-form />
+  <app-transaction-list />
+</div>

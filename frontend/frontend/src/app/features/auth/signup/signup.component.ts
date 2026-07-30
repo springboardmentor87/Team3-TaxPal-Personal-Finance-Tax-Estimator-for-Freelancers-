@@ -15,6 +15,7 @@ export class SignupComponent {
   email = '';
   password = '';
   country = '';
+  incomeBracket: 'low' | 'middle' | 'high' | '' = '';
   errorMessage = '';
 
   constructor(private auth: AuthService, private router: Router) {}
@@ -25,7 +26,9 @@ export class SignupComponent {
       email: this.email,
       password: this.password,
       country: this.country,
+      ...(this.incomeBracket ? { incomeBracket: this.incomeBracket } : {}),
     });
+
     if (result.success) {
       this.router.navigate(['/login']);
     } else {
