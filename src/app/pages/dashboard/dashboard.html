@@ -1,1 +1,120 @@
-<p>dashboard works!</p>
+<div class="dashboard">
+  <header class="topbar">
+    <h3>TaxPal</h3>
+    <span>Alex Morgan</span>
+  </header>
+
+  <div class="content">
+    <h2>Financial Dashboard</h2>
+    <p>Welcome back! Here's your financial summary.</p>
+
+    <div class="actions">
+      <button class="btn-income" (click)="openIncomeForm()">+ Record Income</button>
+      <button class="btn-expense" (click)="openExpenseForm()">- Record Expense</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <p>Monthly Income</p>
+        <h3>${{ monthlyIncome.toFixed(2) }}</h3>
+      </div>
+      <div class="stat-card">
+        <p>Monthly Expenses</p>
+        <h3>${{ monthlyExpenses.toFixed(2) }}</h3>
+      </div>
+    </div>
+
+    <div class="transactions">
+      <h4>Recent Transactions</h4>
+      <table *ngIf="transactions.length > 0">
+        <tr>
+          <th>Date</th><th>Description</th><th>Category</th><th>Amount</th><th>Type</th>
+        </tr>
+        <tr *ngFor="let t of transactions">
+          <td>{{ t.date }}</td>
+          <td>{{ t.description }}</td>
+          <td>{{ t.category }}</td>
+          <td [class.income]="t.type === 'Income'" [class.expense]="t.type === 'Expense'">
+            {{ t.type === 'Income' ? '+' : '-' }}${{ t.amount.toFixed(2) }}
+          </td>
+          <td>{{ t.type }}</td>
+        </tr>
+      </table>
+      <p *ngIf="transactions.length === 0">No transactions yet.</p>
+    </div>
+  </div>
+
+  <!-- Income Modal -->
+  <div class="modal-overlay" *ngIf="showIncomeForm">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Record New Income</h3>
+        <button class="close-btn" (click)="closeIncomeForm()">×</button>
+      </div>
+      <form [formGroup]="incomeForm" (ngSubmit)="saveIncome()">
+        <label>Description</label>
+        <input type="text" formControlName="description" placeholder="e.g. Web Design Project" />
+
+        <label>Amount</label>
+        <input type="number" formControlName="amount" placeholder="0.00" />
+
+        <label>Category</label>
+        <select formControlName="category">
+          <option value="">Select a category</option>
+          <option value="Consulting">Consulting</option>
+          <option value="Salary">Salary</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label>Date</label>
+        <input type="date" formControlName="date" />
+
+        <label>Notes (Optional)</label>
+        <textarea formControlName="notes" placeholder="Add any additional details..."></textarea>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeIncomeForm()">Cancel</button>
+          <button type="submit" class="save-income" [disabled]="incomeForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="modal-overlay" *ngIf="showExpenseForm">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Record New Expense</h3>
+        <button class="close-btn" (click)="closeExpenseForm()">×</button>
+      </div>
+      <form [formGroup]="expenseForm" (ngSubmit)="saveExpense()">
+        <label>Description</label>
+        <input type="text" formControlName="description" placeholder="e.g. Office Rent" />
+
+        <label>Amount</label>
+        <input type="number" formControlName="amount" placeholder="0.00" />
+
+        <label>Category</label>
+        <select formControlName="category">
+          <option value="">Select a category</option>
+          <option value="Rent/Mortgage">Rent/Mortgage</option>
+          <option value="Utilities">Utilities</option>
+          <option value="Food">Food</option>
+          <option value="Business Expenses">Business Expenses</option>
+          <option value="Other">Other</option>
+        </select>
+
+        <label>Date</label>
+        <input type="date" formControlName="date" />
+
+        <label>Notes (Optional)</label>
+        <textarea formControlName="notes" placeholder="Add any additional details..."></textarea>
+
+        <div class="modal-actions">
+          <button type="button" (click)="closeExpenseForm()">Cancel</button>
+          <button type="submit" class="save-expense" [disabled]="expenseForm.invalid">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
