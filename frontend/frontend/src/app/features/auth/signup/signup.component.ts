@@ -18,21 +18,36 @@ export class SignupComponent {
   incomeBracket: 'low' | 'middle' | 'high' | '' = '';
   errorMessage = '';
 
-  constructor(private auth: AuthService, private router: Router) {}
+  constructor(
+    private auth: AuthService,
+    private router: Router
+  ) {}
 
   onSubmit(): void {
-    const result = this.auth.signup({
-      name: this.name,
-      email: this.email,
-      password: this.password,
-      country: this.country,
-      ...(this.incomeBracket ? { incomeBracket: this.incomeBracket } : {}),
-    });
+    this.errorMessage = '';
 
-    if (result.success) {
-      this.router.navigate(['/login']);
-    } else {
-      this.errorMessage = result.message;
-    }
+    this.auth.signup(
+      this.name,
+      this.email,
+      this.password,
+      this.country
+    ).subscribe({
+      next: (result) => {
+
+        if (result.success) {
+          this.router.navigate(['/login']);
+        } else {
+          this.errorMessage = result.message || 'Signup failed';
+        }
+
+      },
+
+      error: (error) => {
+        console.error('Signup error:', error);
+
+        this.errorMessage =
+          error.error?.message || 'Unable to connect to server';
+      }
+    });
   }
 }

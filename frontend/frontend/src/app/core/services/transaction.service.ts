@@ -1,67 +1,132 @@
 import { Injectable, signal, computed } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Transaction, TransactionType } from '../models/transaction.model';
 import { AuthService } from './auth.service';
 
-@Injectable({ providedIn: 'root' })
+interface TransactionResponse {
+  success: boolean;
+  message?: string;
+  transactionId?: number;
+}
+
+interface GetTransactionsResponse {
+  success: boolean;
+  transactions: Transaction[];
+}
+
+@Injectable({
+  providedIn: 'root'
+})
 export class TransactionService {
-  private readonly STORAGE_KEY = 'taxpal_transactions';
 
-  private allTransactions = signal<Transaction[]>(this.load());
+  private readonly API_URL = 'http://localhost:5000/api/transactions';
 
-  constructor(private auth: AuthService) {}
+  private allTransactions = signal<Transaction[]>([]);
+
+  constructor(
+    private http: HttpClient,
+    private auth: AuthService
+  ) {}
 
   // Only this user's transactions, newest first
-  transactions = computed(() => {
-    const userId = this.auth.currentUser()?.id;
-    return this.allTransactions()
-      .filter(t => t.userId === userId)
-      .sort((a, b) => b.date.localeCompare(a.date));
-  });
+  transactions = computed(() =>
+    this.allTransactions()
+      .slice()
+      .sort((a, b) => b.date.localeCompare(a.date))
+  );
 
   totalIncome = computed(() =>
     this.transactions()
       .filter(t => t.type === 'income')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + Number(t.amount), 0)
   );
 
   totalExpense = computed(() =>
     this.transactions()
       .filter(t => t.type === 'expense')
-      .reduce((sum, t) => sum + t.amount, 0)
+      .reduce((sum, t) => sum + Number(t.amount), 0)
   );
 
-  balance = computed(() => this.totalIncome() - this.totalExpense());
+  balance = computed(() =>
+    this.totalIncome() - this.totalExpense()
+  );
 
-  private load(): Transaction[] {
-    const raw = localStorage.getItem(this.STORAGE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  }
+  // Get transactions from MySQL
+loadTransactions(): void {
+  this.http.get<GetTransactionsResponse>(
+    this.API_URL,
+    { withCredentials: true }
+  ).subscribe({
+    next: (response) => {
+      if (response.success) {
+        const transactions = response.transactions.map(tx => ({
+          ...tx,
+          id: Number(tx.id),
+          amount: Number(tx.amount)
+        }));
 
-  private persist(transactions: Transaction[]): void {
-    localStorage.setItem(this.STORAGE_KEY, JSON.stringify(transactions));
-  }
+        this.allTransactions.set(transactions);
+      }
+    },
+    error: (error) => {
+      console.error('Failed to load transactions:', error);
+      this.allTransactions.set([]);
+    }
+  });
+}
 
-  add(type: TransactionType, category: string, amount: number, date: string): void {
-    const userId = this.auth.currentUser()?.id;
-    if (!userId) return;
+  // Add transaction to MySQL
+  add(
+    type: TransactionType,
+    category: string,
+    amount: number,
+    date: string
+  ): void {
 
-    const newTransaction: Transaction = {
-      id: crypto.randomUUID(),
-      userId,
+    const transaction = {
       type,
       category,
       amount,
-      date,
+      date
     };
 
-    const updated = [...this.allTransactions(), newTransaction];
-    this.allTransactions.set(updated);
-    this.persist(updated);
+    this.http.post<TransactionResponse>(
+      this.API_URL,
+      transaction,
+      { withCredentials: true }
+    ).subscribe({
+      next: (response) => {
+        if (response.success) {
+          console.log('Transaction saved:', response);
+
+          // Reload from backend so UI contains DB data
+          this.loadTransactions();
+        }
+      },
+      error: (error) => {
+        console.error('Failed to create transaction:', error);
+      }
+    });
   }
 
-  delete(id: string): void {
-    const updated = this.allTransactions().filter(t => t.id !== id);
-    this.allTransactions.set(updated);
-    this.persist(updated);
+  // Delete transaction from MySQL
+  delete(id: number | string): void {
+
+    this.http.delete<TransactionResponse>(
+      `${this.API_URL}/${id}`,
+      { withCredentials: true }
+    ).subscribe({
+      next: (response) => {
+        if (response.success) {
+          console.log('Transaction deleted');
+
+          // Reload from backend
+          this.loadTransactions();
+        }
+      },
+      error: (error) => {
+        console.error('Failed to delete transaction:', error);
+      }
+    });
   }
 }

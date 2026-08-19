@@ -1,8 +1,8 @@
 export interface User {
-  id: string;
+  id: number;
   name: string;
   email: string;
-  password: string; // week 1: plain text mock only — never do this in real backend
+  password?: string;
   country: string;
   incomeBracket?: 'low' | 'middle' | 'high';
 }

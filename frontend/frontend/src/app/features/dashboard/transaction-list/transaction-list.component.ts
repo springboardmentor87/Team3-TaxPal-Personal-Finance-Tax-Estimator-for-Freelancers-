@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TransactionService } from '../../../core/services/transaction.service';
 
 @Component({
@@ -8,10 +8,15 @@ import { TransactionService } from '../../../core/services/transaction.service';
   templateUrl: './transaction-list.component.html',
   styleUrl: './transaction-list.component.css',
 })
-export class TransactionListComponent {
+export class TransactionListComponent implements OnInit {
+
   constructor(public txService: TransactionService) {}
 
-  delete(id: string): void {
+  ngOnInit(): void {
+    this.txService.loadTransactions();
+  }
+
+  delete(id: number): void {
     this.txService.delete(id);
   }
 }
