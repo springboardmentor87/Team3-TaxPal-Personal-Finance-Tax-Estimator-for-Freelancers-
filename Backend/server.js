@@ -13,9 +13,7 @@ const reportRoutes = require("./routes/reportRoutes");
 const app = express();
 
 const allowedOrigins = [
-  "http://localhost:4200", 
-  "https://team3-tax-pal-personal-finance-tax-ruby.vercel.app",
-  "https://team3-tax-pal-personal-finance-tax.vercel.app"
+  "https://team3-tax-pal-personal-finance-tax-ruby.vercel.app"
 ];
 
 app.use(cors({
