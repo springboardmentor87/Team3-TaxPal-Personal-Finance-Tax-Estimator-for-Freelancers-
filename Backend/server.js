@@ -12,31 +12,11 @@ const reportRoutes = require("./routes/reportRoutes");
 
 const app = express();
 
-const allowedOrigins = [
-  "https://team3-tax-pal-personal-finance-tax-ruby.vercel.app"
-];
+const allowedOrigin =
+  "https://team3-tax-pal-personal-finance-tax-ruby.vercel.app";
 
 app.use(cors({
-  origin: function (origin, callback) {
-
-    console.log("========== CORS CHECK ==========");
-    console.log("Request Origin:", origin);
-    console.log("Allowed Origins:", allowedOrigins);
-
-    if (!origin) {
-      console.log("CORS: No origin - ALLOWED");
-      return callback(null, true);
-    }
-
-    if (allowedOrigins.includes(origin)) {
-      console.log("CORS: Origin ALLOWED:", origin);
-      return callback(null, true);
-    } else {
-      console.log("CORS: Origin BLOCKED:", origin);
-      console.log("Expected one of:", allowedOrigins);
-      return callback(new Error("Not allowed by CORS"));
-    }
-  },
+  origin: allowedOrigin,
   credentials: true
 }));
 
