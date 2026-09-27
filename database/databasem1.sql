@@ -1,4 +1,4 @@
-CREATE DATABASE taxpal;
+CREATE DATABASE TaxPal;
 USE taxpal;
 
 CREATE TABLE users (
